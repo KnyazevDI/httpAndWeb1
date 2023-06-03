@@ -9,6 +9,20 @@ public class Main {
         int port = 9999;
 
         Server server = new Server(threadPoolSize);
+
+        server.addHandler("GET", "/messages", new Handler() {
+            public void handle(Request request, BufferedOutputStream responseStream) {
+                // TODO: handlers code
+                System.out.println(" get messages");
+            }
+        });
+        server.addHandler("POST", "/messages", new Handler() {
+            public void handle(Request request, BufferedOutputStream responseStream) {
+                // TODO: handlers code
+                System.out.println(" Post messages");
+            }
+        });
+
         server.listen(port);
 
     }

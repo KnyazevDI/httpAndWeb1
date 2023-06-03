@@ -1,5 +1,6 @@
 package ru.netology;
 
+import javax.management.Query;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class Server {
@@ -17,6 +19,7 @@ public class Server {
             "/classic.html", "/events.html", "/events.js");
 
     private final int threadPoolSize;
+    private Map<Query, Handler> map;
 
     public Server(int threadPoolSize) {
         this.threadPoolSize = threadPoolSize;
@@ -41,8 +44,6 @@ public class Server {
                     final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     final var out = new BufferedOutputStream(socket.getOutputStream());
             ) {
-                // read only request line for simplicity
-                // must be in form GET /path HTTP/1.1
                 final var requestLine = in.readLine();
                 final var parts = requestLine.split(" ");
 
@@ -62,42 +63,46 @@ public class Server {
                     out.flush();
                     continue;
                 }
-
-                final var filePath = Path.of(".", "public", path);
-                final var mimeType = Files.probeContentType(filePath);
-
-                // special case for classic
-                if (path.equals("/classic.html")) {
-                    final var template = Files.readString(filePath);
-                    final var content = template.replace(
-                            "{time}",
-                            LocalDateTime.now().toString()
-                    ).getBytes();
-                    out.write((
-                            "HTTP/1.1 200 OK\r\n" +
-                                    "Content-Type: " + mimeType + "\r\n" +
-                                    "Content-Length: " + content.length + "\r\n" +
-                                    "Connection: close\r\n" +
-                                    "\r\n"
-                    ).getBytes());
-                    out.write(content);
-                    out.flush();
-                    continue;
-                }
-
-                final var length = Files.size(filePath);
-                out.write((
-                        "HTTP/1.1 200 OK\r\n" +
-                                "Content-Type: " + mimeType + "\r\n" +
-                                "Content-Length: " + length + "\r\n" +
-                                "Connection: close\r\n" +
-                                "\r\n"
-                ).getBytes());
-                Files.copy(filePath, out);
-                out.flush();
+//
+//                final var filePath = Path.of(".", "public", path);
+//                final var mimeType = Files.probeContentType(filePath);
+//
+//                // special case for classic
+//                if (path.equals("/classic.html")) {
+//                    final var template = Files.readString(filePath);
+//                    final var content = template.replace(
+//                            "{time}",
+//                            LocalDateTime.now().toString()
+//                    ).getBytes();
+//                    out.write((
+//                            "HTTP/1.1 200 OK\r\n" +
+//                                    "Content-Type: " + mimeType + "\r\n" +
+//                                    "Content-Length: " + content.length + "\r\n" +
+//                                    "Connection: close\r\n" +
+//                                    "\r\n"
+//                    ).getBytes());
+//                    out.write(content);
+//                    out.flush();
+//                    continue;
+//                }
+//
+//                final var length = Files.size(filePath);
+//                out.write((
+//                        "HTTP/1.1 200 OK\r\n" +
+//                                "Content-Type: " + mimeType + "\r\n" +
+//                                "Content-Length: " + length + "\r\n" +
+//                                "Connection: close\r\n" +
+//                                "\r\n"
+//                ).getBytes());
+//                Files.copy(filePath, out);
+//                out.flush();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
         }
+    }
+
+    public void addHandler(String query, String path, Handler handler) {
+
     }
 }
