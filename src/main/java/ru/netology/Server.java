@@ -41,24 +41,17 @@ public class Server {
                     final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     final var out = new BufferedOutputStream(socket.getOutputStream());
             ) {
-                // read only request line for simplicity
-                // must be in form GET /path HTTP/1.1
+
                 final var requestLine = in.readLine();
                 final var parts = requestLine.split(" ");
-
                 if (parts.length != 3) {
-                    // just close socket
                     continue;
                 }
 
                 final var path = parts[1];
                 if (!validPaths.contains(path)) {
-                    out.write((
-                            "HTTP/1.1 404 Not Found\r\n" +
-                                    "Content-Length: 0\r\n" +
-                                    "Connection: close\r\n" +
-                                    "\r\n"
-                    ).getBytes());
+                    out.write(response404()
+                    .getBytes());
                     out.flush();
                     continue;
                 }
@@ -73,31 +66,42 @@ public class Server {
                             "{time}",
                             LocalDateTime.now().toString()
                     ).getBytes();
-                    out.write((
-                            "HTTP/1.1 200 OK\r\n" +
-                                    "Content-Type: " + mimeType + "\r\n" +
-                                    "Content-Length: " + content.length + "\r\n" +
-                                    "Connection: close\r\n" +
-                                    "\r\n"
-                    ).getBytes());
+                    out.write(responseClassic(mimeType,content).getBytes());
                     out.write(content);
                     out.flush();
                     continue;
                 }
 
                 final var length = Files.size(filePath);
-                out.write((
-                        "HTTP/1.1 200 OK\r\n" +
-                                "Content-Type: " + mimeType + "\r\n" +
-                                "Content-Length: " + length + "\r\n" +
-                                "Connection: close\r\n" +
-                                "\r\n"
-                ).getBytes());
+                out.write(response200(mimeType,length).getBytes());
                 Files.copy(filePath, out);
                 out.flush();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
         }
+    }
+    public String response200 (String mimeType, long length){
+        String response = "HTTP/1.1 200 OK\r\n" +
+                "Content-Type: " + mimeType + "\r\n" +
+                "Content-Length: " + length + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n";
+        return response;
+    }
+    public String response404 (){
+        String response = "HTTP/1.1 404 Not Found\r\n" +
+                "Content-Length: 0\r\n" +
+                "Connection: close\r\n" +
+                "\r\n";
+        return response;
+    }
+    public String responseClassic (String mimeType, byte[] content){
+        String response = "HTTP/1.1 200 OK\r\n" +
+                "Content-Type: " + mimeType + "\r\n" +
+                "Content-Length: " + content.length + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n";
+        return response;
     }
 }
