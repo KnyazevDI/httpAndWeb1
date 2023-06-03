@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 public class Handler {
-    public void handle(Request request, BufferedOutputStream responseStream) {
+    public void handle(Request request, BufferedOutputStream responseStream) throws IOException {
         try {
             responseStream.write(request.getResponse().getBytes());
             Files.copy(request.getFilePath(), responseStream);
