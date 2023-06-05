@@ -7,19 +7,19 @@ public enum Method {
     GET,
     POST;
 
-    private Map<String, Handler> map;
+    private Map<String, Handler> mapHandler;
 
     Method(){
-        map = new HashMap<>();
+        mapHandler = new HashMap<>();
     }
 
 
     public Map<String, Handler> getMap() {
-        return map;
+        return mapHandler;
     }
 
-    public void addToMap(String path, Handler handler){
-        map.put(path, handler);
+    public void addToMapHandler(String path, Handler handler){
+        mapHandler.put(path, handler);
     }
 
 }
